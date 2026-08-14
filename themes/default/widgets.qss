@@ -1,0 +1,64 @@
+
+#sideButton, #closeButton , #hideButton {
+    border-radius:5px;
+}
+#sideButton:hover , #closeButton:hover , #hideButton:hover{
+    background-color:rgba(255,255,255,20)
+}
+
+QLabel[tag="pixmapButton"] {
+    border-radius:5px;
+}
+QLabel[tag="pixmapButton"]:hover {
+    background-color:rgba(255,255,255,20)
+}
+
+
+QWidget[tag="widget"] #widget-container {
+    background-color : rgba(255,255,255,10);
+    border-radius : 5px
+}
+
+QWidget[tag="widget"] #widget-container #widget-head #widget-title {
+    font-weight : bold;
+    font-size : 15px
+}
+
+#ClockWidget #clockLabel {
+    font-size : 45px;
+    font-weight : bold;
+    color : white;
+}
+#ClockWidget #dateLabel {
+    font-size : 15px;
+    color : white;
+}
+
+
+#AppLauncherWidget #scrollArea {
+    background-color:transparent;
+    border:none;
+}
+QScrollBar:vertical {
+    background-color: transparent;
+    width: 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+#AppLauncherWidget #itemContainer {
+    background-color:transparent;
+    border:none;
+}
+
+#AppLauncherWidget QWidget[tag="app"] {
+    padding:5px;
+    background-color : rgba(255,255,255,20);
+    border-radius : 2px
+}
+#AppLauncherWidget QWidget[tag="app"]:hover {
+    background-color : rgba(255,255,255,40);
+}
+
+QWidget[error="true"] {
+    border : 1px solid red
+}

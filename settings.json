@@ -1,0 +1,13 @@
+{
+    "appName":"ExceLauncher",
+    "themeFolder":"default",
+    "defaultSideMode":"rightmode",
+    "animation":{
+        "duration":200,
+        "easing":"OutBack"
+    },
+    "hotkeyTrigger":{
+        "keyMod":1,
+        "key":79
+    }
+}   

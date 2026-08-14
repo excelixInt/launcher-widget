@@ -1,0 +1,62 @@
+#Sidebar #container {
+    background-color:rgba(0,0,0,200);
+    border:1px solid white;
+
+    border-top-left-radius:0;
+    border-top-right-radius:10px;
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:10px
+}
+
+#Sidebar #container #Head #profileImage {
+    border-radius:25px;
+    border:1px solid white
+}
+
+#Sidebar #container #Head #title {
+    font-family : serif;
+    font-size : 25px;
+    font-weight : bold;
+}
+
+#Sidebar #container #Body #content , #Sidebar #container #Body #scrollarea{
+    margin:0;
+    padding:0;
+    background-color:transparent;
+    border:none;
+}
+#Sidebar #container #Body #scrollarea QScrollBar:vertical {
+    background-color: transparent;
+    width: 0px;
+}
+
+#Sidebar #container #Foot #content , #Sidebar #container #Foot #scrollarea{
+    background-color:transparent;
+    border:none;
+    margin-bottom:15px;
+}
+
+
+
+#PanelContainer #container {
+    background-color:rgba(0,0,0,200);
+    border:1px solid white;
+
+    border-top-left-radius:10px;
+    border-top-right-radius:0;
+    border-bottom-left-radius:10px;
+    border-bottom-right-radius:0;
+}
+
+#PanelContainer #container #header #title {
+    font-family : serif;
+    font-size : 20px;
+    font-weight : bold;
+}
+#PanelContainer #container #header #closeButton {
+    border-radius:5px;
+}
+
+#PanelContainer #container #header #closeButton:hover {
+    background-color:rgba(255,255,255,50)
+}
