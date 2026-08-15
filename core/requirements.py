@@ -5,8 +5,6 @@ app = QApplication(sys.argv)
 # folders
 _RootPath = pl.Path(__file__).resolve().parent.parent
 _DataFolderPath = _RootPath / "data"
-_MusicFolderPath = _DataFolderPath / "music"
-_ImagesFolderPath = _DataFolderPath / "images"
 _WidgetsFolderPath = _RootPath / "widgets"
 
 _ResourcesFolderPath = _RootPath / "res"
