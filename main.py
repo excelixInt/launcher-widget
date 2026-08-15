@@ -3,7 +3,7 @@ from core.widgets import *
 from core.requirements import _SettingsPath , _DataFolderPath , __rootpath__
 
 # WidgetLoader
-AttachableWidgets : typing.Dict[str,BaseWidget] = {}
+AttachableWidgets : typing.Dict[str,type[BaseWidget]] = {}
 for file in os.listdir(__rootpath__("widgets")):
     if not file.endswith(".py"):
         continue
@@ -16,8 +16,25 @@ for file in os.listdir(__rootpath__("widgets")):
         ExceptionLogger.exception(f"cannot find {widgetName} in {file}",AttributeError,"class name and file name unmatched.")
     except Exception as e:
         ExceptionLogger.exception(f"{e}",detail=f"something went wrong when collecting {widgetName} in {file}")
-        
-    AttachableWidgets[widgetName] = widget
+    else:
+        AttachableWidgets[widgetName] = widget
+
+# ContentLoader
+ContentGroup: typing.Dict[str,type[BaseContent]] = {}
+for file in os.listdir(__rootpath__("contents")):
+    if not file.endswith(".py"):
+        continue
+    contentName = file.removesuffix(".py")
+    contentRoot = __import__(f"contents.{contentName}")
+    contentModule = getattr(contentRoot,contentName)
+    try:
+        content = getattr(contentModule,contentName)
+    except AttributeError:
+        ExceptionLogger.exception(f"cannot find {contentName} in {file}",AttributeError,"class name and file name unmatched.")
+    except Exception as e:
+        ExceptionLogger.exception(f"{e}",detail=f"something went wrong when collecting {contentName} in {file}")
+    else:
+        ContentGroup[contentName] = content
 
 # App
 class Root(QWidget):
@@ -218,8 +235,8 @@ class Root(QWidget):
                     InvalidSideModeError(self,self.setOpen.__name__)
 
             anim = QPropertyAnimation(self, b"geometry")
-            anim.setEasingCurve(getattr(QEasingCurve.Type,self.root.settings.get("animation.easing")))
-            anim.setDuration(self.root.settings.get("animation.duration"))
+            anim.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
+            anim.setDuration(SETTINGS.get("animation.duration"))
 
             if value:
                 self.show()
@@ -236,12 +253,161 @@ class Root(QWidget):
             anim.start()
 
     class PanelContainer(RootElement):
+        class Part(QWidget):
+            def __init__(self,panelcontainer : Root.PanelContainer):
+                super().__init__()
+                self.panelcontainer = panelcontainer
+                self.setName()
+                self.setProperty("tag",f"{panelcontainer.objectName()}-Part")
+                QVBoxLayout(self).setContentsMargins(0,0,0,0)
+
+                self.content = QWidget()
+                self.content.setObjectName("content")
+                self.contentLayout = None
+
+            def setName(self):
+                self.setObjectName(self.__class__.__name__)
+
+        class Head(Part):
+            def __init__(self, panelcontainer):
+                super().__init__(panelcontainer)
+                self.contentLayout = QHBoxLayout(self.content)
+                self.contentLayout.setContentsMargins(0,0,0,0)
+
+                # title
+                self.title = QLabel(self.panelcontainer.data.get("title"))
+                self.title.setObjectName("title")
+                self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+                # buttons
+                buttonSize = QSize(40,40)
+                self.closeButton = pixmapButton(ICONS.close,"closeButton",buttonSize,None,self.closePanelContainer,None,None)
+            
+                # place
+                self.contentLayout.addWidget(self.title)
+                self.contentLayout.addWidget(self.closeButton)
+                self.layout().addWidget(self.content)
+
+            def closePanelContainer(self,ev):
+                self.panelcontainer.setOpen(False)
+
+        class Body(Part):
+            class Navbar(QWidget):
+                def __init__(self,contentstacker : Root.PanelContainer.Body.ContentStacker):
+                    super().__init__()
+                    self.setObjectName(self.__class__.__name__)
+                    QHBoxLayout(self).setContentsMargins(0,0,0,0)
+                    self.contentstacker = contentstacker
+
+                    self.container = QWidget()
+                    self.container.setObjectName(f"{self.objectName()}-container")
+                    self.containerLayout = QHBoxLayout(self.container)
+                    self.containerLayout.setContentsMargins(0,0,0,0)
+                    
+                    self.loadContentTabs()
+                    self.layout().addWidget(self.container)
+
+                def loadContentTabs(self):
+                    for i , content in enumerate([self.contentstacker.widget(i) for i in range(self.contentstacker.count())]):
+                        btn = QLabel(content.objectName(),alignment=Qt.AlignmentFlag.AlignCenter)
+                        btn.setProperty("tag","textButton")
+                        btn.mousePressEvent = lambda ev , idx=i: self.contentstacker.setCurrentContentByIndex(idx)
+                        self.containerLayout.addWidget(btn)
+
+            class ContentStacker(QStackedWidget):
+                def __init__(self, bindWidget : Root.PanelContainer.Body):
+                    super().__init__()
+                    self.setObjectName(self.__class__.__name__)
+                    self.bindWidget = bindWidget
+                    self.animGroup = QParallelAnimationGroup(self)
+                    self.loadContents()
+
+                def loadContents(self):
+                    for contentName in self.bindWidget.panelcontainer.data.get("contents"):
+                        contentName : str
+                        if not contentName in ContentGroup.keys():
+                            ExceptionLogger.exception(f"content : {contentName} not found",KeyError,"the content may did not load correctly.")
+                            continue
+                        content = ContentGroup[contentName](self)
+                        self.addWidget(content)
+
+                def setCurrentContentByIndex(self,index : int):
+                    if self.currentIndex() == index or index < 0 or index >= self.count():
+                        return
+
+                    current_index = self.currentIndex()
+                    current_content = self.widget(current_index)
+                    next_content = self.widget(index)
+
+                    # next
+                    if current_index < index:
+                        next_startGeometry = self.rightContentRect
+                        current_endGeometry = self.leftContentRect
+                    # prev
+                    else:
+                        next_startGeometry = self.leftContentRect
+                        current_endGeometry = self.rightContentRect
+
+                    next_content.setGeometry(next_startGeometry)
+                    next_content.show()
+                    next_content.raise_()
+
+                    anim_current = QPropertyAnimation(current_content,b"geometry",self)
+                    anim_current.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
+                    anim_current.setDuration(SETTINGS.get("animation.duration"))
+                    anim_current.setStartValue(self.displayedContentRect)
+                    anim_current.setEndValue(current_endGeometry)
+
+                    anim_next = QPropertyAnimation(next_content,b"geometry",self)
+                    anim_next.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
+                    anim_next.setDuration(SETTINGS.get("animation.duration"))
+                    anim_next.setStartValue(next_startGeometry)
+                    anim_next.setEndValue(self.displayedContentRect)
+
+                    self.animGroup.clear()
+                    self.animGroup.addAnimation(anim_current)
+                    self.animGroup.addAnimation(anim_next)
+                    
+                    self.animGroup.finished.connect(lambda: self.on_animation_finished(index))
+                    self.animGroup.start()
+            
+                def on_animation_finished(self, index: int):
+                    self.setCurrentIndex(index)
+
+                @property
+                def displayedContentRect(self):
+                    return QRect(QPoint(0,0),self.bindWidget.size())
+                @property
+                def leftContentRect(self):
+                    return QRect(QPoint(-self.bindWidget.width(),0),self.bindWidget.size())
+                @property
+                def rightContentRect(self):
+                    return QRect(QPoint(self.bindWidget.width(),0),self.bindWidget.size())
+                
+            def __init__(self, panelcontainer): 
+                super().__init__(panelcontainer)
+                self.contentLayout = QVBoxLayout(self.content)
+                self.contentLayout.setContentsMargins(0,0,0,0)
+
+                self.contentstacker = self.ContentStacker(self)
+                self.navbar = self.Navbar(self.contentstacker)
+                
+                self.contentLayout.setSpacing(2)
+                self.contentLayout.addWidget(self.navbar)
+                self.contentLayout.addWidget(self.contentstacker,stretch=1)
+                self.layout().addWidget(self.content)
+
         def __init__(self, root, w, h):
             super().__init__(root, w, h)
             self.loadData()
             QVBoxLayout(self).setContentsMargins(5,5,5,5)
             self.containerLayout = QVBoxLayout(self.container)
 
+            self.head = self.Head(self)
+            self.body = self.Body(self)
+
+            self.containerLayout.addWidget(self.head)
+            self.containerLayout.addWidget(self.body,stretch=1)
             self.layout().addWidget(self.container)
 
         def isOpen(self):
@@ -273,8 +439,8 @@ class Root(QWidget):
                 rectOpen = self.root.ROOTELEMENTGEOMETRY.get(f"{self.objectName()}.fullwidth.open")
                 
             anim = QPropertyAnimation(self, b"geometry")
-            anim.setEasingCurve(getattr(QEasingCurve.Type,self.root.settings.get("animation.easing")))
-            anim.setDuration(self.root.settings.get("animation.duration"))
+            anim.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
+            anim.setDuration(SETTINGS.get("animation.duration"))
 
             if value:
                 self.show()
@@ -323,8 +489,8 @@ class Root(QWidget):
                     InvalidSideModeError(self,self.setFullWidth.__name__)
 
             anim = QPropertyAnimation(self, b"geometry")
-            anim.setEasingCurve(getattr(QEasingCurve.Type,self.root.settings.get("animation.easing")))
-            anim.setDuration(self.root.settings.get("animation.duration"))
+            anim.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
+            anim.setDuration(SETTINGS.get("animation.duration"))
             if value:
                 anim.setStartValue(rectClose)
                 anim.setEndValue(rectOpen)
@@ -337,8 +503,7 @@ class Root(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.settings = JSONDict(_SettingsPath)
-        self.styles = Styles(self,self.settings.get("themeFolder"))
+        self.styles = Styles(self,SETTINGS.get("themeFolder"))
         self.connections : typing.Dict[str,str] = FileManager.load(__rootpath__(pl.Path("data") / "connections.json"),detail="load connections",jsonFormat=True)
         
         # Main App Display Configure
@@ -351,11 +516,11 @@ class Root(QWidget):
         self.setObjectName(self.__class__.__name__)
 
         Tool = Qt.WindowType.Tool
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Tool)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setWindowTitle(self.settings.get("appName"))
+        self.setWindowTitle(SETTINGS.get("appName"))
 
-        self.sideMode = self.settings.get("defaultSideMode")
+        self.sideMode = SETTINGS.get("defaultSideMode")
 
         # Sidebar
         self.sidebarWidth = 300
@@ -485,11 +650,11 @@ class HotkeyFilter(QAbstractNativeEventFilter):
     
 # Setup
 rootApp = Root()
-app.setApplicationName(rootApp.settings.get("appName"))
+app.setApplicationName(SETTINGS.get("appName"))
 
 # hotkey trigger
 user32 = ctypes.windll.user32
-user32.RegisterHotKey(None, 1, rootApp.settings.get("hotkeyTrigger.keyMod"),rootApp.settings.get("hotkeyTrigger.key"))
+user32.RegisterHotKey(None, 1, SETTINGS.get("hotkeyTrigger.keyMod"),SETTINGS.get("hotkeyTrigger.key"))
 hotkey_filter = HotkeyFilter(rootApp.openSequence)
 app.installNativeEventFilter(hotkey_filter)
 

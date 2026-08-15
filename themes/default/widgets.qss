@@ -1,16 +1,12 @@
-
-#sideButton, #closeButton , #hideButton {
+QLabel[tag="pixmapButton"] , QLabel[tag="textButton"]{
     border-radius:5px;
 }
-#sideButton:hover , #closeButton:hover , #hideButton:hover{
+QLabel[tag="pixmapButton"]:hover  , QLabel[tag="textButton"]:hover {
     background-color:rgba(255,255,255,20)
 }
 
-QLabel[tag="pixmapButton"] {
-    border-radius:5px;
-}
-QLabel[tag="pixmapButton"]:hover {
-    background-color:rgba(255,255,255,20)
+QLabel[tag="textButton"] {
+    padding:5px
 }
 
 

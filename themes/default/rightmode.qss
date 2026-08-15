@@ -39,7 +39,7 @@
 
 
 #PanelContainer #container {
-    background-color:rgba(0,0,0,200);
+    background-color:rgba(0,0,0,150);
     border:1px solid white;
 
     border-top-left-radius:10px;
@@ -48,15 +48,13 @@
     border-bottom-right-radius:0;
 }
 
-#PanelContainer #container #header #title {
+#PanelContainer #container #Head #title {
     font-family : serif;
     font-size : 20px;
     font-weight : bold;
 }
-#PanelContainer #container #header #closeButton {
-    border-radius:5px;
-}
 
-#PanelContainer #container #header #closeButton:hover {
-    background-color:rgba(255,255,255,50)
+#PanelContainer #container #Body #content{
+    background-color:rgba(0,0,0,50);
+    border-radius : 5px;
 }

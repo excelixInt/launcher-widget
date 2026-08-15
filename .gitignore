@@ -13,4 +13,9 @@ env/
 htmlcov/
 .coverage
 
+.vscode/
+
 data/
+
+dump/
+dump.py

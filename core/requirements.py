@@ -3,10 +3,11 @@ from core.modules import *
 app = QApplication(sys.argv)
 
 # folders
-_RootPath = pl.Path(str(pl.Path(__file__).resolve().parent).removesuffix("\\core"))
+_RootPath = pl.Path(__file__).resolve().parent.parent
 _DataFolderPath = _RootPath / "data"
 _MusicFolderPath = _DataFolderPath / "music"
 _ImagesFolderPath = _DataFolderPath / "images"
+_WidgetsFolderPath = _RootPath / "widgets"
 
 _ResourcesFolderPath = _RootPath / "res"
 _IconFolderPath = _ResourcesFolderPath / "icons"
@@ -16,6 +17,10 @@ _SettingsPath =  _RootPath / "settings.json"
 
 def __rootpath__(path : pl.Path | str):
     return _RootPath / path
+
+# create folders
+_DataFolderPath.mkdir(exist_ok=True)
+_WidgetsFolderPath.mkdir(exist_ok=True)
 
 suffixes = [".svg",".png",".jpg",".jpeg",".webp"]
 

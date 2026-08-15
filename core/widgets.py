@@ -59,26 +59,6 @@ class RoundIconWidget(QLabel):
     def set_size(self, size):
         self.setFixedSize(size, size)
 
-def setPixmapButton(
-    label : QLabel,
-    pixmap : QPixmap,
-    name : str,
-    labelSize : QSize = None,
-    pixmapSize : QSize = None,
-    onClick : typing.Callable | typing.Any = None
-    ):
-    if pixmapSize:
-        pixmap = pixmap.scaled(QSize(pixmapSize))
-    if labelSize:
-        label.setFixedSize(QSize(labelSize))
-    if onClick:
-        label.mousePressEvent = onClick
-    
-    label.setPixmap(pixmap)
-    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    label.setObjectName(name)
-    label.setProperty("tag","pixmapButton")
-
 def pixmapButton(
     pixmap : QPixmap,
     name : str,
@@ -191,7 +171,7 @@ class BaseWidget(QWidget):
     def __init__(self,title : str = ""):
         super().__init__()
         QVBoxLayout(self).setContentsMargins(0,0,0,0)
-        self.setProperty("tag","widget")
+        self.setProperty("tag","Widget")
         self.setName()
         self.loadData()
         self.heightOpen = 200
@@ -199,7 +179,7 @@ class BaseWidget(QWidget):
 
         self.container = QWidget()
         QVBoxLayout(self.container)
-        self.container.setObjectName("widget-container")
+        self.container.setObjectName(f"{self.objectName()}-container")
 
         self.body = self.Body(self)
         self.head = self.Head(self,title)
@@ -213,6 +193,10 @@ class BaseWidget(QWidget):
 
     def fillBodyContent(self,body : Body):...
 
+    def setContainerLayout(self,layout : QLayout):
+        self.container.setLayout(layout)
+        return layout
+
     def setName(self):
         self.setObjectName(self.__class__.__name__)
 
@@ -224,3 +208,26 @@ class BaseWidget(QWidget):
                 json.dump({},f,indent=4)
         self.data = JSONDict(path)
 
+class BaseContent(QWidget):
+    def __init__(self,parent : QWidget,title : str = ""):
+        super().__init__(parent)
+        self.setProperty("tag","Content")
+        self.setName()
+        self.title = title
+
+        QVBoxLayout(self)
+        self.container = QWidget()
+        QVBoxLayout(self.container)
+        self.container.setObjectName(f"{self.objectName()}-container")
+
+        self.fillContent(self.container)
+        self.layout().addWidget(self.container)
+
+
+    def fillContent(self,container : QWidget):...
+
+    def setContainerLayout(self,layout : QLayout):
+        self.container.setLayout(layout)
+
+    def setName(self):
+        self.setObjectName(self.__class__.__name__)
