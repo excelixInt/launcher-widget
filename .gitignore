@@ -15,7 +15,6 @@ htmlcov/
 
 .vscode/
 
-data/
-
+DUMP/
 dump/
 dump.py

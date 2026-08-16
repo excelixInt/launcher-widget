@@ -1,35 +1,64 @@
+from core.defaults import *
 from core.modules import *
 
 app = QApplication(sys.argv)
-
-# folders
+# root
 _RootPath = pl.Path(__file__).resolve().parent.parent
-_DataFolderPath = _RootPath / "data"
-_WidgetsFolderPath = _RootPath / "widgets"
-
-_ResourcesFolderPath = _RootPath / "res"
-_IconFolderPath = _ResourcesFolderPath / "icons"
-
-# files
-_SettingsPath =  _RootPath / "settings.json"
-
 def __rootpath__(path : pl.Path | str):
     return _RootPath / path
 
+# folders
+_DataFolderPath = __rootpath__("data")
+_WidgetsFolderPath = __rootpath__("widgets")
+_ContentsFolderPath = __rootpath__("contents")
+_ResourcesFolderPath = __rootpath__("res")
+_StylesFolderPath = __rootpath__("styles")
+
+# files
+_SettingsPath = __rootpath__("settings.json")
+
 # create folders
-_DataFolderPath.mkdir(exist_ok=True)
+_ResourcesFolderPath.mkdir(exist_ok=True)
+(_ResourcesFolderPath / "icons").mkdir(exist_ok=True)
+
 _WidgetsFolderPath.mkdir(exist_ok=True)
+_ContentsFolderPath.mkdir(exist_ok=True)
+_StylesFolderPath.mkdir(exist_ok=True)
 
-suffixes = [".svg",".png",".jpg",".jpeg",".webp"]
+_DataFolderPath.mkdir(exist_ok=True)
+(_DataFolderPath / "images").mkdir(exist_ok=True)
+(_DataFolderPath / "music").mkdir(exist_ok=True)
 
-class _Icons:
-    def __init__(self):
-        for subfolder in os.listdir(_IconFolderPath):
-            for iconFile in os.listdir(_IconFolderPath / subfolder):
-                attr = iconFile
-                for suffix in suffixes:
-                    attr = attr.removesuffix(suffix)
-                setattr(self,attr,QPixmap(_IconFolderPath / subfolder / iconFile))
+(_DataFolderPath / "connections.json").touch()
+
+def folderLoader(
+        folderPath : pl.Path | str,
+        fileLoader : type = None,
+        fileExtensionFilter : typing.List[str] = [],
+        clearExtension : bool = False
+    ):
+    result = {}
+    for itemName in os.listdir(folderPath):
+        itemPath = pl.Path(folderPath) / itemName
+        # if folder
+        if itemPath.is_dir():
+            V = folderLoader(itemPath,fileLoader,fileExtensionFilter,clearExtension)
+            result[itemName] = V
+            continue
+        # if file
+        if fileExtensionFilter:
+            for format in fileExtensionFilter:
+                if not itemName.endswith(format):
+                    continue
+
+        if clearExtension:
+            itemName = pl.Path(itemName).stem
+
+        if fileLoader:
+            result[itemName] = fileLoader(itemPath)
+        else:
+            result[itemName] = itemPath
+    return result
 
 class Logger:
     class Prefix:
@@ -39,7 +68,6 @@ class Logger:
         ASK = "[?]"
         INFO = "[INFO]"
         FATALERROR = "[FATALERROR]"
-
         UNDEFINED = "[UNDEFINED]"
 
     class Color:
@@ -97,9 +125,9 @@ class FileManager[T]:
     path : str = None
     class msg:
         def TryLoadFile(path):
-            Logger.log(f"try load {path=}.",0)
+            Logger.log(f"try load {str(path)=}.",0)
         def TrySaveFile(path):
-            Logger.log(f"try save {path=}.",0)
+            Logger.log(f"try save {str(path)=}.",0)
 
         def LoadSucceed():
             Logger.log(f"load succeed")
@@ -112,19 +140,19 @@ class FileManager[T]:
             Logger.log(f"load failed")
 
         def FileNotFound(path : str):
-            Logger.log(f"cannot find {path=}.",1)
+            Logger.log(f"cannot find {str(path)=}.",1)
         def FileFounded(path : str):
-            Logger.log(f"{path=} founded.",4)
+            Logger.log(f"{str(path)=} founded.",4)
 
         def FilePathNotSetError():
             ExceptionLogger.exception("file need to set","FilePathNotSetError","FileLoader.load need path argument for load the file. for example: 'folder/subfolder/file.txt'.")
 
         def FileNotFoundError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{path=} Not found.",FileNotFoundError,detail)
+            ExceptionLogger.exception(f"{str(path)=} Not found.",FileNotFoundError,detail)
         def PermissionError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{path=} Do not have permission to access.",PermissionError,detail)
+            ExceptionLogger.exception(f"{str(path)=} Do not have permission to access.",PermissionError,detail)
         def UnicodeDecodeError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{path=} Encoding mismatch. Ensure the file is saved in UTF-8 format.",UnicodeDecodeError,detail)
+            ExceptionLogger.exception(f"{str(path)=} Encoding mismatch. Ensure the file is saved in UTF-8 format.",UnicodeDecodeError,detail)
 
     @staticmethod
     def load(
@@ -208,12 +236,12 @@ class FileManager[T]:
         return v
 
 JSONType = typing.Dict[str,typing.Any] | typing.List | str | int | float | bool 
-class JSONDict:
+class DynamicDict:
     def __init__(self,pathOrObject : pl.Path | JSONType = None,default : JSONType = None):
         self._data = default
         if not pathOrObject:
             return
-        if isinstance(pathOrObject,pl.Path):
+        if isinstance(pathOrObject,pl.Path | str):
             self.load(pathOrObject)
             return
         self._data = pathOrObject
@@ -256,8 +284,6 @@ def InvalidSideModeError(root,detail : str):
 class Styles:
     def __init__(self,root : QWidget,themeFolder : str = None):
         self.root = root
-        self.themes = __rootpath__("themes")
-        self.themes.mkdir(exist_ok=True)
 
         self.widgets = STYLEDEFAULT_WIDGETS
         self.leftmode = STYLEDEFAULT_LEFTMODE
@@ -274,13 +300,13 @@ class Styles:
 
     @property
     def widgetsPath(self):
-        return __rootpath__(self.themes / self.themeFolder / "widgets.qss")
+        return __rootpath__(_StylesFolderPath / self.themeFolder / f"widgets{SETTINGS.get("style.fileExtension")}")
     @property
     def leftmodePath(self):
-        return __rootpath__(self.themes / self.themeFolder / "leftmode.qss")
+        return __rootpath__(_StylesFolderPath / self.themeFolder / f"leftmode{SETTINGS.get("style.fileExtension")}")
     @property
     def rightmodePath(self):
-        return __rootpath__(self.themes / self.themeFolder / "rightmode.qss")
+        return __rootpath__(_StylesFolderPath / self.themeFolder / f"rightmode{SETTINGS.get("style.fileExtension")}")
 
     def apply(self):
         stylesheet = ""
@@ -299,31 +325,13 @@ class Styles:
         self.root.setStyleSheet(stylesheet)
         Logger.log(f"{self.__class__.__name__}.apply() succeed")
                 
+# img suffixes
+imageSuffixes = [".svg",".png",".jpg",".jpeg",".webp"]
 
-# default
-SETTINGS = JSONDict(_SettingsPath)
-ICONS = _Icons()
-
-SETTINGSDEFAULT = {
-    "appName":"ExceLauncher",
-    "themeFolder":"default",
-    "defaultSideMode":"rightmode",
-    "animation":{
-        "duration":200,
-        "easing":"OutBack"
-    },
-    "hotkeyTrigger":{
-        "keyMod":1,
-        "key":79
-    }
-}   
-
-STYLEDEFAULT_WIDGETS = """
-
-"""
-STYLEDEFAULT_LEFTMODE = """
-
-"""
-STYLEDEFAULT_RIGHTMODE = """
-
-"""
+# root data
+if not _SettingsPath.exists():
+    SETTINGS = DynamicDict(SETTINGSDEFAULT)
+    SETTINGS.save("settings.json")
+else:
+    SETTINGS = DynamicDict(_SettingsPath,SETTINGSDEFAULT)
+ICONS = DynamicDict(folderLoader(_ResourcesFolderPath / "icons",QPixmap,imageSuffixes,True))

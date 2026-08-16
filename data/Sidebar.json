@@ -1,0 +1,9 @@
+{
+    "title":"ExceSide",
+    "profileImage":"data/images/profile.png",
+    "widgets":[
+        "ClockWidget","AppLauncherWidget","SettingsWidget","MusicPlayerWidget"
+        
+    ],
+    "connectionsData":"data/connections.json"
+}

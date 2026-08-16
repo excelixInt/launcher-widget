@@ -1,4 +1,4 @@
-{
+SETTINGSDEFAULT = {
     "appName":"ExceLauncher",
     "style":{
         "folderName":"default",
@@ -14,3 +14,14 @@
         "key":79
     }
 }   
+
+
+STYLEDEFAULT_WIDGETS = """
+
+"""
+STYLEDEFAULT_LEFTMODE = """
+
+"""
+STYLEDEFAULT_RIGHTMODE = """
+
+"""

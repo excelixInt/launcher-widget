@@ -43,7 +43,7 @@ class Root(QWidget):
     class RootElement(QWidget):
         def __init__(self,root : Root,w:int,h:int):
             super().__init__(parent=root)
-            self.data : JSONDict
+            self.data : DynamicDict
             self.root = root
             self.resize(w,h)
             self.setName()
@@ -53,7 +53,7 @@ class Root(QWidget):
             
         def isOpen(self) -> bool:...
         def loadData(self):
-            self.data = JSONDict(__rootpath__(_DataFolderPath / f"{self.objectName()}.json"))
+            self.data = DynamicDict(__rootpath__(_DataFolderPath / f"{self.objectName()}.json"))
         def setName(self):
             self.setObjectName(self.__class__.__name__)
             
@@ -95,7 +95,7 @@ class Root(QWidget):
                 self.sideButton = pixmapButton(QPixmap(),"sideButton",buttonSize,None,self.changeSide,None,None)
                 self._updateChangeSideButtonIcon()
                 # closeButton
-                self.closeButton = pixmapButton(ICONS.close,"closeButton",buttonSize,None,self.closeSidebar,None,None)
+                self.closeButton = pixmapButton(ICONS.get("menu.close"),"closeButton",buttonSize,None,self.closeSidebar,None,None)
             
                 # place
                 self.contentLayout.addWidget(self.profileImage)
@@ -121,9 +121,9 @@ class Root(QWidget):
             def _updateChangeSideButtonIcon(self):
                 match self.sidebar.root.sideMode:
                     case Root.LEFTMODE:
-                        self.sideButton.setPixmap(ICONS.toright)
+                        self.sideButton.setPixmap(ICONS.get("menu.toright"))
                     case Root.RIGHTMODE:
-                        self.sideButton.setPixmap(ICONS.toleft)
+                        self.sideButton.setPixmap(ICONS.get("menu.toleft"))
                     case _:
                         InvalidSideModeError(self,self._updateChangeSideButtonIcon.__name__)
 
@@ -163,26 +163,12 @@ class Root(QWidget):
                 self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
                 # contents
-                def openLink(link : str):
-                    webbrowser.open(link)
-
-                linkButtons = []
                 for key , link in self.sidebar.root.connections.items():
-                    if hasattr(ICONS,key):
-                        btn = pixmapButton(
-                            getattr(ICONS,key),
-                            key,
-                            onClick=lambda ev , l=link: openLink(l)
-                        )
+                    if key in ICONS.get("connections").keys():
+                        pixmap = ICONS.get(f"connections.{key}")
                     else:
-                        btn = pixmapButton(
-                            ICONS.link,
-                            key,
-                            onClick=lambda ev , l=link: openLink(l)
-                        )
-                    linkButtons.append(btn)
-
-                for btn in linkButtons:
+                        pixmap = ICONS.get(f"connections.link")
+                    btn = pixmapButton(pixmap,key,onClick=lambda ev , l=link: webbrowser.open(l))
                     self.contentLayout.addWidget(btn)
 
                 self.scrollArea.setWidget(self.content)
@@ -281,7 +267,7 @@ class Root(QWidget):
 
                 # buttons
                 buttonSize = QSize(40,40)
-                self.closeButton = pixmapButton(ICONS.close,"closeButton",buttonSize,None,self.closePanelContainer,None,None)
+                self.closeButton = pixmapButton(ICONS.get("menu.close"),"closeButton",buttonSize,None,self.closePanelContainer,None,None)
             
                 # place
                 self.contentLayout.addWidget(self.title)
@@ -503,8 +489,8 @@ class Root(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.styles = Styles(self,SETTINGS.get("themeFolder"))
-        self.connections : typing.Dict[str,str] = FileManager.load(__rootpath__(pl.Path("data") / "connections.json"),detail="load connections",jsonFormat=True)
+        self.styles = Styles(self,SETTINGS.get("style.folderName"))
+        self.connections : typing.Dict[str,str] = FileManager.load(_DataFolderPath / "connections.json",detail="load connections",jsonFormat=True)
         
         # Main App Display Configure
         self.marginTop = 50
@@ -529,7 +515,7 @@ class Root(QWidget):
         # Panelcontainer
         self.panelcontainer = Root.PanelContainer(self,self.panelcontainerWidth,self.height())
 
-        self.ROOTELEMENTGEOMETRY = JSONDict({
+        self.ROOTELEMENTGEOMETRY = DynamicDict({
                     "Sidebar":{
                         "leftmode":{
                             "close":QRect(-self.sidebarWidth,self.marginTop,self.sidebarWidth,self.elementHeight),

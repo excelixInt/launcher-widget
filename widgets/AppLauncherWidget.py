@@ -36,6 +36,7 @@ class AppLauncherWidget(BaseWidget):
                 self.clearContainer(sub_layout)
 
     def loadApps(self):
+        self.loadData()
         self.clearContainer(self.containerItemLayout)
         for name , path in self.data._data.items():
             item = QPushButton(name)

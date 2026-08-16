@@ -108,7 +108,7 @@ class BaseWidget(QWidget):
             self.title.setObjectName("widget-title")
             self.title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            self.hideButtonPixmap = {"hide":ICONS.arrow_up,"show":ICONS.arrow_down}
+            self.hideButtonPixmap = {"hide":ICONS.get("menu.arrow_up"),"show":ICONS.get("menu.arrow_down")}
             self.hideButton = pixmapButton(QPixmap(),"hideButton",buttonSize,None,self.hideBody)
             self._updateHideButtonPixmap()
 
@@ -173,7 +173,8 @@ class BaseWidget(QWidget):
         QVBoxLayout(self).setContentsMargins(0,0,0,0)
         self.setProperty("tag","Widget")
         self.setName()
-        self.loadData()
+        self.data = DynamicDict({})
+        
         self.heightOpen = 200
         self.setMaximumHeight(self.heightOpen)
 
@@ -206,13 +207,15 @@ class BaseWidget(QWidget):
         if not path.exists():
             with open(path,"w") as f:
                 json.dump({},f,indent=4)
-        self.data = JSONDict(path)
+        self.data = DynamicDict(path)
 
 class BaseContent(QWidget):
     def __init__(self,parent : QWidget,title : str = ""):
         super().__init__(parent)
         self.setProperty("tag","Content")
         self.setName()
+        self.data = DynamicDict({})
+        
         self.title = title
 
         QVBoxLayout(self)
@@ -231,3 +234,11 @@ class BaseContent(QWidget):
 
     def setName(self):
         self.setObjectName(self.__class__.__name__)
+
+    def loadData(self):
+        Logger.log(f"{self.objectName()}.loadData()")
+        path = __rootpath__(f"data/contents/{self.objectName()}.json")
+        if not path.exists():
+            with open(path,"w") as f:
+                json.dump({},f,indent=4)
+        self.data = DynamicDict(path)
