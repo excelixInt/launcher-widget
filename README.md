@@ -1,6 +1,10 @@
 # Simple Desktop Widget
 
-A Customizable desktop widget using PySide6 *(This project still WIP)*.
+A Customizable desktop widget using PySide6! 
+
+**“Fast Widgets Easy to Code”** i mean the widget from Qt which is from C++ and Easy to code using Python with PySide6 library
+
+*(This project still WIP several widget and content still empty)*.
 
 ## License
 
