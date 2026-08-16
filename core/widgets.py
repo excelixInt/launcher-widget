@@ -121,7 +121,7 @@ class BaseWidget(QWidget):
             else:
                 self.body.hide()
             self._updateHideButtonPixmap()
-            self._updateHeightWidget()
+            self._updateWidgetHeight()
 
         def _updateHideButtonPixmap(self):
             if self.body.isHidden():
@@ -129,7 +129,7 @@ class BaseWidget(QWidget):
             else:
                 self.hideButton.setPixmap(self.hideButtonPixmap["hide"])
 
-        def _updateHeightWidget(self):
+        def _updateWidgetHeight(self):
             anim1 = QPropertyAnimation(self.widget,b"minimumHeight")
             anim1.setEasingCurve(getattr(QEasingCurve.Type,SETTINGS.get("animation.easing")))
             anim1.setDuration(SETTINGS.get("animation.duration"))
