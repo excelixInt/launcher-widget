@@ -214,7 +214,36 @@ Create , Style , Configure and Attach your widget to the app!
         - easing : the animation movement more cool and smooth, use the flag from  `QEasingCurve.Type`
     - hotkeyTrigger 
         - keyMod and key : trigger for the app open and close, it complicated, but the default is `{"keyMod" : 1, "key" : 79}` it mean you need click `Alt + O` for open and close the Sidebar and PanelContainer 
-    
+
+### Attach
+
+- You need attach your widget to the app
+- for widgets in the sidebar you can edit `data/Sidebar.json`
+    ```json
+    {
+        "title":"ExceSide",
+        "profileImage":"data/images/profile.png",
+        "widgets":[
+            "ClockWidget","AppLauncherWidget","SettingsWidget","MusicPlayerWidget"
+            
+        ],
+        "connectionsData":"data/connections.json"
+    }
+    ```
+    attach on `"widgets"` key and value must array with the name widgets class you have in `widgets/`
+
+- for contents in the PanelContainer you can edit `data/PanelContainer.json`
+    ```json
+    {
+        "title":"ExceLauncher",
+        "contents":["Home","Gallery"]
+    }
+    ```
+    attach on `"contents"` key and value must array with the name contents class you have in `contents/`
+
+## Creator Note
+
+uh idk
 
 ## Creator Information
 
