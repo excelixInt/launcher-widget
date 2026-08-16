@@ -184,7 +184,7 @@ class BaseWidget(QWidget):
 
         self.body = self.Body(self)
         self.head = self.Head(self,title)
-        self.head._updateHeightWidget()
+        self.head._updateWidgetHeight()
 
         self.fillBodyContent(self.body)
 
