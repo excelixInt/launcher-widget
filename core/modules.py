@@ -1,5 +1,5 @@
 # utils
-import sys , os , json , typing , math , webbrowser , colorama , requests , subprocess , numpy
+import sys , os , json , typing , math , webbrowser , colorama , subprocess , numpy
 import pathlib as pl
 import ctypes
 from ctypes import wintypes
