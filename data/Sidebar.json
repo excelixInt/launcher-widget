@@ -1,8 +1,8 @@
 {
     "title":"ExceSide",
-    "profileImage":"data/images/profile.png",
+    "profileImage":"data/images/profileImage.png",
     "widgets":[
-        "ClockWidget","AppLauncherWidget","SettingsWidget","MusicPlayerWidget"
+        "ClockWidget","AppLauncherWidget","MusicPlayerWidget"
         
     ],
     "connectionsData":"data/connections.json"

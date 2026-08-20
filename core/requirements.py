@@ -1,6 +1,10 @@
 from core.defaults import *
 from core.modules import *
 
+T = typing.TypeVar("T")  
+TY = typing.TypeVar("TY",bound=type) 
+DT = typing.TypeVar("DT",bound=dict)
+
 app = QApplication(sys.argv)
 # root
 _RootPath = pl.Path(__file__).resolve().parent.parent
@@ -26,10 +30,24 @@ _ContentsFolderPath.mkdir(exist_ok=True)
 _StylesFolderPath.mkdir(exist_ok=True)
 
 _DataFolderPath.mkdir(exist_ok=True)
-(_DataFolderPath / "images").mkdir(exist_ok=True)
-(_DataFolderPath / "music").mkdir(exist_ok=True)
 
-(_DataFolderPath / "connections.json").touch()
+def dataFolderRequire(path : str | pl.Path):
+    fullpath = _DataFolderPath / path
+    if not fullpath.exists():
+        fullpath.mkdir(parents=True,exist_ok=True)
+        return "created"
+    return "ready"
+
+def dataJSONRequire(path : str | pl.Path,default : T = None) -> T:
+    fullpath = _DataFolderPath / path
+    if not fullpath.exists():
+        with open(fullpath,"r") as F:
+            json.dump(default,F,indent=4)
+        return default
+    with open(fullpath,"r") as F:
+        return json.load(F)
+
+dataJSONRequire("connections.json")
 
 def folderLoader(
         folderPath : pl.Path | str,
@@ -117,11 +135,7 @@ class ExceptionLogger(Logger):
         if not isinstance(exceptionType,str) and isinstance(exceptionType,type):
             exceptionType = exceptionType().__class__.__name__
         ExceptionLogger.log(f"{message} | {exceptionType=} | {detail=}",2)
-            
-
-
-T = typing.TypeVar("T")    
-TY = typing.TypeVar("TY",bound=type) 
+  
 class FileManager[T]:
     path : str = None
     class msg:
@@ -262,7 +276,6 @@ class DynamicDict:
     def save(self,path : pl.Path | str):
         FileManager.save(self._data,path,f"save {self.__class__.__name__} to {path}",True)
 
-DT = typing.TypeVar("DT",bound=dict)
 def dictGetter(dictObject : DT | dict,path : str):
     keys = path.split(".")
     for i in range(len(keys)):
