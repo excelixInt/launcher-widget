@@ -119,15 +119,16 @@ class ExceptionLogger(Logger):
         ExceptionLogger.log(f"{message} | {exceptionType=} | {detail=}",2)
             
 
+
 T = typing.TypeVar("T")    
 TY = typing.TypeVar("TY",bound=type) 
 class FileManager[T]:
     path : str = None
     class msg:
         def TryLoadFile(path):
-            Logger.log(f"try load {str(path)=}.",0)
+            Logger.log(f"try load {path}.",0)
         def TrySaveFile(path):
-            Logger.log(f"try save {str(path)=}.",0)
+            Logger.log(f"try save {path}.",0)
 
         def LoadSucceed():
             Logger.log(f"load succeed")
@@ -140,19 +141,19 @@ class FileManager[T]:
             Logger.log(f"load failed")
 
         def FileNotFound(path : str):
-            Logger.log(f"cannot find {str(path)=}.",1)
+            Logger.log(f"cannot find {path}.",1)
         def FileFounded(path : str):
-            Logger.log(f"{str(path)=} founded.",4)
+            Logger.log(f"{path} founded.",4)
 
         def FilePathNotSetError():
             ExceptionLogger.exception("file need to set","FilePathNotSetError","FileLoader.load need path argument for load the file. for example: 'folder/subfolder/file.txt'.")
 
         def FileNotFoundError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{str(path)=} Not found.",FileNotFoundError,detail)
+            ExceptionLogger.exception(f"{path} Not found.",FileNotFoundError,detail)
         def PermissionError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{str(path)=} Do not have permission to access.",PermissionError,detail)
+            ExceptionLogger.exception(f"{path} Do not have permission to access.",PermissionError,detail)
         def UnicodeDecodeError(path : str,detail : str = None):
-            ExceptionLogger.exception(f"{str(path)=} Encoding mismatch. Ensure the file is saved in UTF-8 format.",UnicodeDecodeError,detail)
+            ExceptionLogger.exception(f"{path} Encoding mismatch. Ensure the file is saved in UTF-8 format.",UnicodeDecodeError,detail)
 
     @staticmethod
     def load(

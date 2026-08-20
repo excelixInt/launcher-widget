@@ -349,15 +349,19 @@ class Root(QWidget):
                     anim_next.setDuration(SETTINGS.get("animation.duration"))
                     anim_next.setStartValue(next_startGeometry)
                     anim_next.setEndValue(self.displayedContentRect)
-
-                    self.animGroup.clear()
+                        
                     self.animGroup.addAnimation(anim_current)
                     self.animGroup.addAnimation(anim_next)
                     
-                    self.animGroup.finished.connect(lambda: self.on_animation_finished(index))
+                    self.animGroup.finished.connect(lambda: self._on_animation_finished(index))
                     self.animGroup.start()
-            
-                def on_animation_finished(self, index: int):
+
+                def _on_animation_finished(self, index: int):
+                    try:
+                        del self.animGroup
+                        self.animGroup = QParallelAnimationGroup(self)
+                    except TypeError:
+                        pass
                     self.setCurrentIndex(index)
 
                 @property
