@@ -82,7 +82,7 @@ Create , Style , Configure and Attach your widget to the app!
 
             # content
             widget = QLabel("This is my gallery widget") 
-            pix
+            
             image = QImage()
 
             # place
